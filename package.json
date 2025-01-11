@@ -1,0 +1,31 @@
+{
+  "name": "talend2postman",
+  "version": "1.0.0",
+  "description": "A tool to convert JSON exported from Talend API Tester to Postman v2.1 collection format.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ajanth/Talend2Postman.git"
+  },
+  "bin": {
+    "talend2postman": "./src/index.js"
+  },
+  "keywords": [
+    "talend",
+    "postman",
+    "converter",
+    "api"
+  ],
+  "author": "Ajanth",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ajanth/Talend2Postman/issues"
+  },
+  "homepage": "https://github.com/Ajanth/Talend2Postman#readme",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  }
+}
