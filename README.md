@@ -58,3 +58,8 @@ Then you can run the tool from anywhere:
 ```bash
 talend2postman <input-file> <output-file>
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```
