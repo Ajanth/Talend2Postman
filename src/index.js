@@ -5,19 +5,22 @@ const { v4: uuidv4 } = require("uuid");
 
 const SCHEMA_V2_1 = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json";
 
-/**
- * Convert a single Talend Request entity to a Postman request object.
- */
+
+function replaceVariables(value) {
+  if (typeof value === "string" && value.includes("${")) {
+    return value.replace(/\$\{([^}]+)\}/g, "{{$1}}");
+  }
+  return value;
+}
+
 function talendRequestToPostmanItem(talendRequest) {
   const { id, name, method, headers, uri, body } = talendRequest;
 
   const postmanMethod = method?.name || "GET";
 
-  let scheme = (uri?.scheme?.name || "http").replace(":", "");
-
-  let host = uri?.host || "localhost";
-
-  let trimmedPath = (uri?.path || "").replace(/^\/+/, "");
+  let scheme = replaceVariables(uri?.scheme?.name || "http").replace(":", "");
+  let host = replaceVariables(uri?.host || "localhost");
+  let trimmedPath = replaceVariables((uri?.path || "").replace(/^\/+/, ""));
 
   let rawUrl = `${scheme}://${host}`;
   if (trimmedPath) {
@@ -29,7 +32,7 @@ function talendRequestToPostmanItem(talendRequest) {
   const postmanUrl = {
     raw: rawUrl,
     protocol: scheme,
-    host: [hostWithoutPort],
+    host: replaceVariables(hostWithoutPort).split("."),
     path: trimmedPath ? trimmedPath.split("/") : []
   };
 
@@ -43,7 +46,7 @@ function talendRequestToPostmanItem(talendRequest) {
       if (h.enabled) {
         postmanHeaders.push({
           key: h.name,
-          value: h.value
+          value: replaceVariables(h.value)
         });
       }
     });
@@ -63,20 +66,20 @@ function talendRequestToPostmanItem(talendRequest) {
       postmanBody.mode = "urlencoded";
       postmanBody.urlencoded = formItems.map((fi) => ({
         key: fi.name,
-        value: fi.value,
+        value: replaceVariables(fi.value),
         type: "text"
       }));
     } else if (/multipart\/form-data/i.test(formBody.encoding)) {
       postmanBody.mode = "formdata";
       postmanBody.formdata = formItems.map((fi) => ({
         key: fi.name,
-        value: fi.value,
+        value: replaceVariables(fi.value),
         type: fi.type === "file" ? "file" : "text"
       }));
     } else {
       postmanBody = {
         mode: "raw",
-        raw: body?.textBody || "",
+        raw: replaceVariables(body?.textBody || ""),
         options: { raw: { language: "text" } }
       };
     }
@@ -84,11 +87,11 @@ function talendRequestToPostmanItem(talendRequest) {
     const textBody = body?.textBody || "";
     if (contentType.includes("application/json")) {
       postmanBody.mode = "raw";
-      postmanBody.raw = textBody;
+      postmanBody.raw = replaceVariables(textBody);
       postmanBody.options = { raw: { language: "json" } };
     } else if (textBody) {
       postmanBody.mode = "raw";
-      postmanBody.raw = textBody;
+      postmanBody.raw = replaceVariables(textBody);
       postmanBody.options = { raw: { language: "text" } };
     } else {
       postmanBody.mode = "raw";
@@ -171,7 +174,7 @@ function main() {
   const outputFile = args[1];
 
   if (!fs.existsSync(inputFile)) {
-    console.error("Error: input file does not exist:", inputFile);
+    console.error("Error: Input file does not exist:", inputFile);
     process.exit(1);
   }
 
